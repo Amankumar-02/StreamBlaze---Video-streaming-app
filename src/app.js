@@ -20,3 +20,9 @@ app.use(express.urlencoded({extended: true, limit: "50mb"}));
 app.use(express.static("public"));
 app.use(cookieParser());
 // app.use(morgan("dev")); //HTTP request logger middleware for node.js
+
+
+import {userRoute} from './routes/user.route.js';
+// pass the user route
+app.use("/api/v1/users", userRoute);
+
