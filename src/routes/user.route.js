@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, updateAccountDetails, updateUserAvatar, updateUserCoverImage } from '../controllers/user.controller.js';
+import { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory } from '../controllers/user.controller.js';
 // multer to store media in local //
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -28,3 +28,6 @@ userRoute.route("/changeCurrentPassword").post(verifyJWT, changeCurrentPassword)
 userRoute.route("/updateAccountDetails").patch(verifyJWT, updateAccountDetails);
 userRoute.route("/updateUserAvatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
 userRoute.route("/updateUserCoverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
+
+userRoute.route("/c/:username").get(verifyJWT, getUserChannelProfile);
+userRoute.route("/history").get(verifyJWT, getWatchHistory);
