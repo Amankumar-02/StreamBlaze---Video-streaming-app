@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory } from '../controllers/user.controller.js';
+import { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory } from '../controllers/user.controller.js';
 // multer to store media in local //
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -19,15 +19,16 @@ userRoute.route("/register").post(
     ]),
     registerUser
 );
-userRoute.route("/login").post(loginUser);
+userRoute.route("/login").post(upload.none(), loginUser);
 
 // secured routes
 userRoute.route("/logout").post(verifyJWT, logoutUser);
-userRoute.route("/refreshToken").post(refreshAccessToken);
-userRoute.route("/changeCurrentPassword").post(verifyJWT, changeCurrentPassword);
-userRoute.route("/updateAccountDetails").patch(verifyJWT, updateAccountDetails);
-userRoute.route("/updateUserAvatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
-userRoute.route("/updateUserCoverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
+userRoute.route("/refresh-token").post(refreshAccessToken);
+userRoute.route("/change-password").post(verifyJWT, changeCurrentPassword);
+userRoute.route("/current-user").get(verifyJWT, getCurrentUser);
+userRoute.route("/update-user").patch(verifyJWT, updateAccountDetails);
+userRoute.route("/update-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
+userRoute.route("/update-coverImg").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 
 userRoute.route("/c/:username").get(verifyJWT, getUserChannelProfile);
-userRoute.route("/history").get(verifyJWT, getWatchHistory);
+userRoute.route("/watch-history").get(verifyJWT, getWatchHistory);

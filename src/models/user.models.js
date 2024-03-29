@@ -24,11 +24,17 @@ const userSchema = new Schema({
         index: true,
     },
     avatar:{
-        type: String,
+        type: {
+            public_id: String,
+            url: String,
+        },
         required: true,
     },
     coverImage:{
-        type: String,
+        type: {
+            public_id: String,
+            url: String,
+        },
         required: true,
     },
     watchHistory:[
@@ -54,69 +60,38 @@ userSchema.pre("save", async function(next){
     return next();
 });
 
-// compare the db and client password
-userSchema.methods.isPasswordCorrect = async function(passwordReceive){
-    return await bcrypt.compare(passwordReceive, this.password);
-};
-
-// access token generator using jwt
-userSchema.methods.generateAccessToken = function(){
-    return jwt.sign(
-        {
-            _id: this._id,
-            username: this._username,
-            email: this.email,
-            fullName: this.fullName,
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn: process.env.ACCESS_TOKEN_EXPIRY}
-    )
-};
-
-// refresh token generator using jwt
-userSchema.methods.generateRefreshToken = function(){
-    return jwt.sign(
-        {
-            _id: this._id,
-        },
-        process.env.REFRESH_TOKEN_SECRET,
-        {expiresIn: process.env.REFRESH_TOKEN_EXPIRY}
-    )
+userSchema.methods = {
+    // compare the db and client password
+    isPasswordCorrect : async function(plainTextPassword){
+        return await bcrypt.compare(plainTextPassword, this.password);
+    },
+    // access token generator using jwt
+    generateAccessToken: function(){
+        return jwt.sign(
+            {
+                _id: this._id,
+                email: this.email,
+                username: this.username,
+                fullName: this.fullName
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+            }
+        )
+    },
+    // refresh token generator using jwt
+    generateRefreshToken: function(){
+        return jwt.sign(
+            {
+                _id: this._id,
+            },
+            process.env.REFRESH_TOKEN_SECRET,
+            {
+                expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+            }
+        )
+    },
 };
 
 export const User = mongoose.model("User", userSchema);
-
-
-// userSchema.methods = {
-//     // compare the db and client password
-//     comparePassword : async function(plainTextPassword){
-//         return await bcrypt.compare(plainTextPassword, this.password);
-//     },
-//     // access token generator using jwt
-//     generateAccessToken: function(){
-//         return jwt.sign(
-//             {
-//                 _id: this._id,
-//                 email: this.email,
-//                 username: this.username,
-//                 fullName: this.fullName
-//             },
-//             process.env.ACCESS_TOKEN_SECRET,
-//             {
-//                 expiresIn: process.env.ACCESS_TOKEN_EXPIRY
-//             }
-//         )
-//     },
-//     // refresh token generator using jwt
-//     generateRefreshToken: function(){
-//         return jwt.sign(
-//             {
-//                 _id: this._id,
-//             },
-//             process.env.REFRESH_TOKEN_SECRET,
-//             {
-//                 expiresIn: process.env.REFRESH_TOKEN_EXPIRY
-//             }
-//         )
-//     },
-// };

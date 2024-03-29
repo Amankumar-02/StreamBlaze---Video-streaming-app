@@ -2,7 +2,7 @@ import {asyncHandler} from '../utils/asyncHandler.js';
 import {ApiError} from '../utils/ApiError.js';
 import {ApiResponse} from '../utils/ApiResponse.js';
 // Send media to cloudinary //
-import {uploadOnCloudinary} from '../utils/cloudinary.js';
+import {uploadOnCloudinary, deleteOnCloudinary} from '../utils/cloudinary.js';
 // Models User //
 import {User} from '../models/user.models.js';
 import jwt from 'jsonwebtoken';
@@ -73,16 +73,24 @@ export const registerUser = asyncHandler(async(req, res)=>{
 
     const avatarUploaded = await uploadOnCloudinary(avatarLocalPath);
     const coverImageUploaded = await uploadOnCloudinary(coverImageLocalPath);
+    // console.log("avatarUploaded", avatarUploaded);
     if(!avatarUploaded){
         throw new ApiError(400, "Avatar file is required")
     }
-
+    // here after media upload on cloudinary, it return url and public_id
+    // use the public_id with db creation
     const newDBUser = await User.create({
         username,
         email,
         fullName,
-        avatar: avatarUploaded.url,
-        coverImage: coverImageUploaded.url,
+        avatar: {
+            public_id: avatarUploaded?.public_id,
+            url: avatarUploaded.secure_url,
+        },
+        coverImage: {
+            public_id: coverImageUploaded?.public_id || "",
+            url : coverImageUploaded.secure_url || "",
+        },
         password
     });
     const createdUser = await User.findById(newDBUser._id).select('-password -refreshToken');
@@ -222,6 +230,14 @@ export const changeCurrentPassword = asyncHandler(async(req, res)=>{
     return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"))
 });
 
+export const getCurrentUser = asyncHandler(async(req, res) => {
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, req.user, "current user fetched successfully")
+        )
+});
+
 export const updateAccountDetails = asyncHandler(async(req, res)=>{
     const {newUsername, newFullName} = req.body;
     if(!(newUsername || newFullName)){
@@ -234,6 +250,7 @@ export const updateAccountDetails = asyncHandler(async(req, res)=>{
     // if(exists){
     //     throw new ApiError(401, "This username is already taken")
     // };
+    
     const userData = await User.findByIdAndUpdate(
         req.user?._id,
         {
@@ -249,27 +266,39 @@ export const updateAccountDetails = asyncHandler(async(req, res)=>{
     return res.status(200).json(new ApiResponse(200, userData, "Account details update successfully"));
 });
 
-export const updateUserAvatar = asyncHandler(async(req, res)=>{
+export const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path;
-    if(!avatarLocalPath){
+    if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is missing")
     };
     const avatarUpload = await uploadOnCloudinary(avatarLocalPath);
-    if(!avatarUpload){
+    if (!avatarUpload) {
         throw new ApiError(400, "Error while uploading avatar")
-    }
-    const user = await User.findByIdAndUpdate(
+    };
+    // before change media store the pervious media //
+    const dbAvatar = await User.findById(req.user?._id);
+    const avatarToDelete = dbAvatar.avatar.public_id;
+    const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
-                avatar: avatarUpload.url,
+            $set: {
+                avatar: {
+                    public_id: avatarUpload.public_id,
+                    url: avatarUpload.secure_url,
+                }
             }
         },
         {
             new: true,
         }).select('-password -refreshToken');
-    return res.status(200).json(new ApiResponse(200, user, "Avatar updated successfully"))
+    // check old media is present and new media is present
+    // then delete old media
+    if (avatarToDelete && updatedUser.avatar.public_id) {
+        await deleteOnCloudinary(avatarToDelete);
+    };
+    return res.status(200).json(new ApiResponse(200, updatedUser, "Avatar updated successfully"))
 });
+
 export const updateUserCoverImage = asyncHandler(async(req, res)=>{
     const coverImageLocalPath = req.file?.path;
     if(!coverImageLocalPath){
@@ -278,18 +307,29 @@ export const updateUserCoverImage = asyncHandler(async(req, res)=>{
     const coverImageUpload = await uploadOnCloudinary(coverImageLocalPath);
     if(!coverImageUpload){
         throw new ApiError(400, "Error while uploading coverImage")
-    }
-    const user = await User.findByIdAndUpdate(
+    };
+    // before change media store the pervious media //
+    const dbCoverImage = await User.findById(req.user?._id);
+    const coverImageToDelete = dbCoverImage.coverImage.public_id;
+    const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
-                coverImage: coverImageUpload.url,
+                coverImage: {
+                    public_id: coverImageUpload.public_id,
+                    url: coverImageUpload.secure_url,
+                }
             }
         },
         {
             new: true,
         }).select('-password -refreshToken');
-    return res.status(200).json(new ApiResponse(200, user, "CoverImage updated successfully"))
+    // check old media is present and new media is present
+    // then delete old media
+    if (coverImageToDelete && updatedUser.coverImage.public_id) {
+        await deleteOnCloudinary(coverImageToDelete);
+    }
+    return res.status(200).json(new ApiResponse(200, updatedUser, "CoverImage updated successfully"))
 });
 
 export const getUserChannelProfile = asyncHandler(async(req, res)=>{
