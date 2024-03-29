@@ -6,12 +6,11 @@ import {
     updateComment,
 } from "../controllers/comment.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
+import {upload} from '../middlewares/multer.middleware.js';
 
-const router = Router();
+export const commentRouter = Router();
 
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
+commentRouter.use(verifyJWT, upload.none()); // Apply verifyJWT middleware to all routes in this file
 
-router.route("/:videoId").get(getVideoComments).post(addComment);
-router.route("/c/:commentId").delete(deleteComment).patch(updateComment);
-
-export default router
+commentRouter.route("/v/:videoId").get(getVideoComments).post(addComment);
+commentRouter.route("/c/:commentId").delete(deleteComment).patch(updateComment);
