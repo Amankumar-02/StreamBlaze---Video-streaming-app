@@ -129,7 +129,7 @@ export const loginUser = asyncHandler(async(req, res)=>{
     const options = {
         httpOnly: true,
         secure: true,
-        sameSite: "None",
+        // sameSite: "None",
     };
 
     return res
@@ -159,7 +159,7 @@ export const logoutUser = asyncHandler(async(req, res)=>{
     const options = {
         httpOnly: true,
         secure: true,
-        sameSite: "None",
+        // sameSite: "None",
     };
     return res
     .status(200)
@@ -193,7 +193,7 @@ export const refreshAccessToken = asyncHandler(async(req, res)=>{
         const options = {
             httpOnly: true,
             secure: true,
-            sameSite: "None",
+            // sameSite: "None",
         }
         return res.status(200)
         .cookie('accessToken', accessToken, options)
