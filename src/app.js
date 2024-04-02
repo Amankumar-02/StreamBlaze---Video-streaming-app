@@ -11,7 +11,7 @@ export const port = process.env.PORT || 4000;
 app.use(
     cors({
         // origin: process.env.CORS_ORIGIN,
-        origin: ["http://localhost:5173", "*", "https://youtube-clone-frontend-six.vercel.app"],
+        origin: ["https://youtube-clone-frontend-six.vercel.app", "http://localhost:5173", "*"],
         methods: ["GET", "POST", "PATCH", "DELETE"],
         credentials:true,
     })
