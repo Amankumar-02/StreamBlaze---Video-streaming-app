@@ -10,7 +10,8 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 const toggleSubscription = asyncHandler(async (req, res) => {
     const {channelId} = req.params;
     if (!isValidObjectId(channelId)) {
-        throw new ApiError(400, "Invalid channelId");
+        // throw new ApiError(400, "Invalid channelId");
+        res.status(400).json({ error: "Invalid channelId", success:"false" });
     }
 
     const isSubscribed = await Subscription.findOne({
@@ -50,17 +51,18 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-    const {channelId} = req.params;
+    let {channelId} = req.params;
     if (!isValidObjectId(channelId)) {
-        throw new ApiError(400, "Invalid channelId");
+        // throw new ApiError(400, "Invalid channelId");
+        res.status(400).json({ error: "Invalid channelId", success:"false" });
     }
 
-    const channelIdDB = new mongoose.Types.ObjectId(channelId);
+    channelId = new mongoose.Types.ObjectId(channelId);
 
     const subscribers = await Subscription.aggregate([
         {
             $match: {
-                channel: channelIdDB,
+                channel: channelId,
             },
         },
         {
@@ -84,7 +86,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
                                 $cond: {
                                     if: {
                                         $in: [
-                                            channelIdDB,
+                                            channelId,
                                             "$subscribedToSubscriber.subscriber",
                                         ],
                                     },

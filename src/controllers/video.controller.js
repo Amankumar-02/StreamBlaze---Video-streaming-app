@@ -33,7 +33,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
     };
     if(userId){
         if(!isValidObjectId(userId)){
-            throw new ApiError(400, "Invalid userId");
+            // throw new ApiError(400, "Invalid userId");
+            res.status(400).json({ error: "Invalid userId", success:"false" });
         }
         pipeline.push({
             $match:{
@@ -97,29 +98,34 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description} = req.body
     if ([title, description].some((field) => field?.trim() === "")) {
-        throw new ApiError(400, "All fields are required");
+        // throw new ApiError(400, "All fields are required");
+        res.status(400).json({ error: "All fields are required", success:"false" });
     }
 
     const videoFileLocalPath = req.files?.videoFile[0].path;
     const thumbnailLocalPath = req.files?.thumbnail[0].path;
 
     if (!videoFileLocalPath) {
-        throw new ApiError(400, "videoFileLocalPath is required");
+        // throw new ApiError(400, "videoFileLocalPath is required");
+        res.status(400).json({ error: "videoFileLocalPath is required", success:"false" });
     };
 
     if (!thumbnailLocalPath) {
-        throw new ApiError(400, "thumbnailLocalPath is required");
+        // throw new ApiError(400, "thumbnailLocalPath is required");
+        res.status(400).json({ error: "thumbnailLocalPath is required", success:"false" });
     };
 
     const videoFile = await uploadOnCloudinary(videoFileLocalPath);
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
     if (!videoFile) {
-        throw new ApiError(400, "Video file not found");
+        // throw new ApiError(400, "Video file not found");
+        res.status(400).json({ error: "Video file not found", success:"false" });
     };
 
     if (!thumbnail) {
-        throw new ApiError(400, "Thumbnail not found");
+        // throw new ApiError(400, "Thumbnail not found");
+        res.status(400).json({ error: "Thumbnail not found", success:"false" });
     };
 
     const video = await Video.create({
@@ -141,7 +147,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const videoUploaded = await Video.findById(video._id);
 
     if (!videoUploaded) {
-        throw new ApiError(500, "videoUpload failed please try again !!!");
+        // throw new ApiError(500, "videoUpload failed please try again !!!");
+        res.status(500).json({ error: "videoUpload failed please try again !!!", success:"false" });
     }
 
     return res
@@ -156,11 +163,13 @@ const getVideoById = asyncHandler(async (req, res) => {
     
     // userId = new mongoose.Types.ObjectId(userId)
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(400, "Invalid videoId");
+        // throw new ApiError(400, "Invalid videoId");
+        res.status(400).json({ error: "Invalid videoId", success:"false" });
     }
 
     if (!isValidObjectId(req.user?._id)) {
-        throw new ApiError(400, "Invalid userId");
+        // throw new ApiError(400, "Invalid userId");
+        res.status(400).json({ error: "Invalid userId", success:"false" });
     }
 
     const video = await Video.aggregate([
@@ -256,7 +265,8 @@ const getVideoById = asyncHandler(async (req, res) => {
     ]);
 
     if (!video) {
-        throw new ApiError(500, "failed to fetch video");
+        // throw new ApiError(500, "failed to fetch video");
+        res.status(500).json({ error: "failed to fetch video", success:"false" });
     }
 
     // increment views if video fetched successfully
@@ -285,24 +295,25 @@ const updateVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
     const { videoId } = req.params
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(400, "Invalid videoId");
+        // throw new ApiError(400, "Invalid videoId");
+        res.status(400).json({ error: "Invalid videoId", success:"false" });
     }
 
     if (!(title && description)) {
-        throw new ApiError(400, "title and description are required");
+        // throw new ApiError(400, "title and description are required");
+        res.status(400).json({ error: "title and description are required", success:"false" });
     }
 
     const video = await Video.findById(videoId);
 
     if (!video) {
-        throw new ApiError(404, "No video found");
+        // throw new ApiError(404, "No video found");
+        res.status(404).json({ error: "No video found", success:"false" });
     }
 
     if (video?.owner.toString() !== req.user?._id.toString()) {
-        throw new ApiError(
-            400,
-            "You can't edit this video as you are not the owner"
-        );
+        // throw new ApiError(400,"You can't edit this video as you are not the owner");
+        res.status(400).json({ error: "You can't edit this video as you are not the owner", success:"false" });
     }
 
     //deleting old thumbnail and updating with new one
@@ -311,13 +322,15 @@ const updateVideo = asyncHandler(async (req, res) => {
     const thumbnailLocalPath = req.file?.path;
 
     if (!thumbnailLocalPath) {
-        throw new ApiError(400, "thumbnail is required");
+        // throw new ApiError(400, "thumbnail is required");
+        res.status(400).json({ error: "thumbnail is required", success:"false" });
     }
 
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
     if (!thumbnail) {
-        throw new ApiError(400, "thumbnail not found");
+        // throw new ApiError(400, "thumbnail not found");
+        res.status(400).json({ error: "thumbnail not found", success:"false" });
     }
 
     const updatedVideo = await Video.findByIdAndUpdate(
@@ -336,7 +349,8 @@ const updateVideo = asyncHandler(async (req, res) => {
     );
 
     if (!updatedVideo) {
-        throw new ApiError(500, "Failed to update video please try again");
+        // throw new ApiError(500, "Failed to update video please try again");
+        res.status(500).json({ error: "Failed to update video please try again", success:"false" });
     }
 
     if (updatedVideo) {
@@ -352,26 +366,27 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(400, "Invalid videoId");
+        // throw new ApiError(400, "Invalid videoId");
+        res.status(400).json({ error: "Invalid videoId", success:"false" });
     }
 
     const video = await Video.findById(videoId);
 
     if (!video) {
-        throw new ApiError(404, "No video found");
+        // throw new ApiError(404, "No video found");
+        res.status(404).json({ error: "No video found", success:"false" });
     }
 
     if (video?.owner.toString() !== req.user?._id.toString()) {
-        throw new ApiError(
-            400,
-            "You can't delete this video as you are not the owner"
-        );
+        // throw new ApiError(400,"You can't delete this video as you are not the owner");
+        res.status(400).json({ error: "You can't delete this video as you are not the owner", success:"false" });
     }
 
     const videoDeleted = await Video.findByIdAndDelete(video?._id);
 
     if (!videoDeleted) {
-        throw new ApiError(400, "Failed to delete the video please try again");
+        // throw new ApiError(400, "Failed to delete the video please try again");
+        res.status(400).json({ error: "Failed to delete the video please try again", success:"false" });
     }
 
     await deleteOnCloudinary(video.thumbnail.public_id); // video model has thumbnail public_id stored in it->check videoModel
@@ -395,20 +410,20 @@ const deleteVideo = asyncHandler(async (req, res) => {
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(400, "Invalid videoId");
+        // throw new ApiError(400, "Invalid videoId");
+        res.status(400).json({ error: "Invalid videoId", success:"false" });
     };
 
     const video = await Video.findById(videoId);
 
     if (!video) {
-        throw new ApiError(404, "Video not found");
+        // throw new ApiError(404, "Video not found");
+        res.status(404).json({ error: "Video not found", success:"false" });
     };
 
     if (video?.owner.toString() !== req.user?._id.toString()) {
-        throw new ApiError(
-            400,
-            "You can't toogle publish status as you are not the owner"
-        );
+        // throw new ApiError(400,"You can't toogle publish status as you are not the owner");
+        res.status(400).json({ error: "You can't toogle publish status as you are not the owner", success:"false" });
     };
 
     const toggledVideoPublish = await Video.findByIdAndUpdate(
@@ -422,7 +437,8 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     );
 
     if (!toggledVideoPublish) {
-        throw new ApiError(500, "Failed to toogle video publish status");
+        // throw new ApiError(500, "Failed to toogle video publish status");
+        res.status(500).json({ error: "Failed to toogle video publish status", success:"false" });
     }
 
     return res

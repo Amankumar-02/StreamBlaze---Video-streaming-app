@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import {Video} from "../models/video.models.js";
 import {Comment} from "../models/comment.models.js";
+import {Video} from "../models/video.models.js";
 import {Like} from "../models/like.models.js";
 import {ApiError} from "../utils/ApiError.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
@@ -13,7 +13,8 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const video = await Video.findById(videoId);
 
     if (!video) {
-        throw new ApiError(404, "Video not found");
+        // throw new ApiError(404, "Video not found");
+        res.status(404).json({ error: "Video not found", success:"false" });
     }
 
     const commentsAggregate = Comment.aggregate([
@@ -96,13 +97,15 @@ const addComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
 
     if (!content) {
-        throw new ApiError(400, "Content is required");
+        // throw new ApiError(400, "Content is required");
+        res.status(400).json({ error: "Content is required", success:"false" });
     }
 
     const video = await Video.findById(videoId);
 
     if (!video) {
-        throw new ApiError(404, "Video not found");
+        // throw new ApiError(404, "Video not found");
+        res.status(404).json({ error: "Video not found", success:"false" });
     }
 
     const comment = await Comment.create({
@@ -112,7 +115,8 @@ const addComment = asyncHandler(async (req, res) => {
     });
 
     if (!comment) {
-        throw new ApiError(500, "Failed to add comment please try again");
+        // throw new ApiError(500, "Failed to add comment please try again");
+        res.status(500).json({ error: "Failed to add comment please try again", success:"false" });
     }
 
     return res
@@ -126,17 +130,20 @@ const updateComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
 
     if (!content) {
-        throw new ApiError(400, "content is required");
+        // throw new ApiError(400, "content is required");
+        res.status(400).json({ error: "content is required", success:"false" });
     }
 
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
-        throw new ApiError(404, "Comment not found");
+        // throw new ApiError(404, "Comment not found");
+        res.status(404).json({ error: "Comment not found", success:"false" });
     }
 
     if (comment?.owner.toString() !== req.user?._id.toString()) {
-        throw new ApiError(400, "only comment owner can edit their comment");
+        // throw new ApiError(400, "only comment owner can edit their comment");
+        res.status(400).json({ error: "only comment owner can edit their comment", success:"false" });
     }
 
     const updatedComment = await Comment.findByIdAndUpdate(
@@ -150,7 +157,8 @@ const updateComment = asyncHandler(async (req, res) => {
     );
 
     if (!updatedComment) {
-        throw new ApiError(500, "Failed to edit comment please try again");
+        // throw new ApiError(500, "Failed to edit comment please try again");
+        res.status(500).json({ error: "Failed to edit comment please try again", success:"false" });
     }
 
     return res
@@ -167,11 +175,13 @@ const deleteComment = asyncHandler(async (req, res) => {
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
-        throw new ApiError(404, "Comment not found");
+        // throw new ApiError(404, "Comment not found");
+        res.status(404).json({ error: "Comment not found", success:"false" });
     }
 
     if (comment?.owner.toString() !== req.user?._id.toString()) {
-        throw new ApiError(400, "only comment owner can delete their comment");
+        // throw new ApiError(400, "only comment owner can delete their comment");
+        res.status(400).json({ error: "only comment owner can delete their comment", success:"false" });
     }
 
     await Comment.findByIdAndDelete(commentId);

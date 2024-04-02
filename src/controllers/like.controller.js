@@ -8,7 +8,8 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const {videoId} = req.params
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(400, "Invalid videoId");
+        // throw new ApiError(400, "Invalid videoId");
+        res.status(400).json({ error: "Invalid videoId", success:"false" });
     }
     const likedAlready = await Like.findOne({
         video: videoId,
@@ -37,7 +38,8 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const {commentId} = req.params
     if (!isValidObjectId(commentId)) {
-        throw new ApiError(400, "Invalid commentId");
+        // throw new ApiError(400, "Invalid commentId");
+        res.status(400).json({ error: "Invalid commentId", success:"false" });
     }
 
 
@@ -68,7 +70,8 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const {tweetId} = req.params;
     if (!isValidObjectId(tweetId)) {
-        throw new ApiError(400, "Invalid tweetId");
+        // throw new ApiError(400, "Invalid tweetId");
+        res.status(400).json({ error: "Invalid tweetId", success:"false" });
     }
 
 
