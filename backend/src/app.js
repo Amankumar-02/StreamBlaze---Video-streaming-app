@@ -15,7 +15,7 @@ app.set("view engine", "ejs")
 app.use(
     cors({
         // origin: process.env.CORS_ORIGIN,
-        origin: ["https://streamblaze-frontend-ui.vercel.app", "http://localhost:5173", "*"],
+        origin: ["http://localhost:5173", "*"],
         methods: ["GET", "POST", "PATCH", "DELETE"],
         credentials:true,
     })
