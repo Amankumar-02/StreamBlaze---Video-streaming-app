@@ -142,7 +142,7 @@ npm install
 
 II. Create .env file:
 
-BACKEND_URL=http://localhost:3000/api/v1
+VITE_BACKEND_URL=http://localhost:3000/api/v1
 
 Start frontend development server:
 
